@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:colours/App/core/constants/color_constants.dart';
+import 'package:colours/App/screens/base_screen/view/unity_button.dart';
 import '../../controller/play_screen_controller.dart';
 
 class PlayActionControls extends StatelessWidget {
@@ -94,59 +95,52 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return UnityButton(
+      width: double.infinity,
+      borderRadius: 18.0,
+      borderWidth: 1.0,
+      shadowHeight: 4.0,
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      baseColor: AppColors.homeCardNavy,
+      shadowColor: const Color(0xFFCBD5E1),
+      gradientColors: const [Colors.white, Color(0xFFF1F5F9)],
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.homeCardNavy,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.homeCardBorder, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 6,
-              offset: const Offset(0, 3),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: iconColor, size: 26),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.5,
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: iconColor, size: 26),
+          ),
+          if (badgeCount != null) ...[
             const SizedBox(height: 6),
-            Text(
-              label,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.5,
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: badgeColor ?? AppColors.primaryPurple,
+                shape: BoxShape.circle,
               ),
-            ),
-            if (badgeCount != null) ...[
-              const SizedBox(height: 6),
-              Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: badgeColor ?? AppColors.primaryPurple,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    '$badgeCount',
-                    style: TextStyle(
-                      color: badgeTextColor ?? Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                    ),
+              child: Center(
+                child: Text(
+                  '$badgeCount',
+                  style: TextStyle(
+                    color: badgeTextColor ?? Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
-            ],
+            ),
           ],
-        ),
+        ],
       ),
     );
   }

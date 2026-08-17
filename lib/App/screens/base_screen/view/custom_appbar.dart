@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:colours/App/core/constants/color_constants.dart';
 import 'package:colours/App/core/utils/app_text_style.dart';
+import 'package:colours/App/screens/base_screen/view/unity_button.dart';
 
 class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
   const CustomAppbar({
@@ -52,20 +53,21 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   Widget _buildBackButton(BuildContext context) {
-    return GestureDetector(
+    return UnityButton(
+      width: 44,
+      height: 44,
+      margin: const EdgeInsets.all(8),
+      borderRadius: 12.0,
+      borderWidth: 1.0,
+      shadowHeight: 3.0,
+      baseColor: AppColors.cardColor,
+      shadowColor: const Color(0xFFCBD5E1),
+      gradientColors: const [Colors.white, Color(0xFFF1F5F9)],
       onTap: () => Navigator.maybePop(context),
-      child: Container(
-        margin: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: AppColors.cardColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.divider),
-        ),
-        child: const Icon(
-          Icons.arrow_back_ios_new_rounded,
-          color: AppColors.textPrimary,
-          size: 18,
-        ),
+      child: const Icon(
+        Icons.arrow_back_ios_new_rounded,
+        color: AppColors.textPrimary,
+        size: 18,
       ),
     );
   }

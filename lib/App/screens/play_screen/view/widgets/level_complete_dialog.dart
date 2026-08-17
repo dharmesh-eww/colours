@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:colours/App/core/constants/color_constants.dart';
+import 'package:colours/App/screens/base_screen/view/unity_button.dart';
 import '../../controller/play_screen_controller.dart';
 
 class LevelCompleteDialog extends StatefulWidget {
@@ -444,84 +445,4 @@ class _AnimatedStarState extends State<AnimatedStar> with SingleTickerProviderSt
   }
 }
 
-// ── Unity Button Widget with 3D press effect and disabled state ───
-class UnityButton extends StatefulWidget {
-  final Widget child;
-  final VoidCallback? onTap;
-  final Color baseColor;
-  final Color shadowColor;
-  final List<Color> gradientColors;
-  final double width;
-  final double height;
 
-  const UnityButton({
-    super.key,
-    required this.child,
-    this.onTap,
-    required this.baseColor,
-    required this.shadowColor,
-    required this.gradientColors,
-    this.width = 60,
-    this.height = 60,
-  });
-
-  @override
-  State<UnityButton> createState() => _UnityButtonState();
-}
-
-class _UnityButtonState extends State<UnityButton> {
-  bool _isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final bool isEnabled = widget.onTap != null;
-
-    return GestureDetector(
-      onTapDown: isEnabled ? (_) => setState(() => _isPressed = true) : null,
-      onTapUp: isEnabled
-          ? (_) {
-              setState(() => _isPressed = false);
-              widget.onTap?.call();
-            }
-          : null,
-      onTapCancel: isEnabled ? () => setState(() => _isPressed = false) : null,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 80),
-        width: widget.width,
-        height: widget.height,
-        margin: EdgeInsets.only(top: _isPressed ? 6.0 : 0.0, bottom: _isPressed ? 0.0 : 6.0),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            colors: isEnabled
-                ? widget.gradientColors
-                : [Colors.grey.shade400, Colors.grey.shade500],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-          border: Border.all(
-            color: isEnabled ? Colors.white.withValues(alpha: 0.4) : Colors.white24,
-            width: 2,
-          ),
-          boxShadow: _isPressed
-              ? []
-              : [
-                  // 3D bottom bezel shadow
-                  BoxShadow(
-                    color: isEnabled ? widget.shadowColor : Colors.grey.shade600,
-                    offset: const Offset(0, 6),
-                  ),
-                  // Subtle ambient shadow
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.15),
-                    blurRadius: 4,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-        ),
-        alignment: Alignment.center,
-        child: widget.child,
-      ),
-    );
-  }
-}

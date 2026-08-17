@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:statekit/statekit.dart';
 import 'package:colours/App/core/constants/avatar_data.dart';
 import 'package:colours/App/core/constants/color_constants.dart';
+import 'package:colours/App/screens/base_screen/view/unity_button.dart';
 import '../../base_screen/view/base_screen.dart';
 import '../binding/profile_binding.dart';
 import '../controller/profile_controller.dart';
@@ -51,42 +52,38 @@ class Profile extends StatekitView<ProfileController> implements ProfileBinding 
                           letterSpacing: 1.2,
                         ),
                       ),
-                      GestureDetector(
+                      UnityButton(
+                        borderRadius: 14.0,
+                        borderWidth: 1.5,
+                        shadowHeight: 3.0,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        baseColor: const Color(0xFFC7D2FE),
+                        shadowColor: const Color(0xFF818CF8).withValues(alpha: 0.5),
+                        gradientColors: const [Color(0xFFEEF2FF), Color(0xFFE0E7FF)],
                         onTap: () async {
                           final result = await Navigator.pushNamed(context, Routes.profileEdit);
                           if (result == true) {
                             ctrl.loadProfile();
                           }
                         },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryPurple.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: AppColors.primaryPurple.withValues(alpha: 0.6),
-                              width: 1.5,
+                        child: const Row(
+                          children: [
+                            Icon(
+                              Icons.edit_rounded,
+                              color: Color(0xFF4F46E5),
+                              size: 16,
                             ),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(
-                                Icons.edit_rounded,
-                                color: AppColors.primaryPurpleLight,
-                                size: 16,
+                            SizedBox(width: 6),
+                            Text(
+                              'EDIT',
+                              style: TextStyle(
+                                color: Color(0xFF4F46E5),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.8,
                               ),
-                              SizedBox(width: 6),
-                              Text(
-                                'EDIT',
-                                style: TextStyle(
-                                  color: AppColors.primaryPurpleLight,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.8,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -312,63 +309,44 @@ class Profile extends StatekitView<ProfileController> implements ProfileBinding 
                           ),
                         ),
                         const SizedBox(height: 16),
-                        GestureDetector(
+                        UnityButton(
+                          width: double.infinity,
+                          height: 52.0,
+                          borderRadius: 16.0,
+                          borderWidth: 1.5,
+                          shadowHeight: 4.0,
+                          baseColor: profile.isGoogleSignedIn ? const Color(0xFFFCA5A5) : Colors.white,
+                          shadowColor: profile.isGoogleSignedIn ? const Color(0xFFEF4444) : const Color(0xFFE2E8F0),
+                          gradientColors: profile.isGoogleSignedIn
+                              ? const [Color(0xFFFEF2F2), Color(0xFFFEE2E2)]
+                              : const [Colors.white, Color(0xFFF8FAFC)],
                           onTap: ctrl.toggleGoogleSignIn,
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            width: double.infinity,
-                            height: 52,
-                            decoration: BoxDecoration(
-                              color: profile.isGoogleSignedIn
-                                  ? const Color(0xFF1E293B)
-                                  : Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: profile.isGoogleSignedIn
-                                    ? AppColors.homeCardBorder
-                                    : Colors.white,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'assets/images/google_logo.png',
+                                width: 22,
+                                height: 22,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(
+                                    Icons.g_mobiledata_rounded,
+                                    color: Colors.redAccent,
+                                    size: 28,
+                                  );
+                                },
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: profile.isGoogleSignedIn
-                                      ? Colors.transparent
-                                      : Colors.white.withValues(alpha: 0.15),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
+                              const SizedBox(width: 12),
+                              Text(
+                                profile.isGoogleSignedIn ? 'Sign Out Google Account' : 'Sign in with Google',
+                                style: TextStyle(
+                                  color: profile.isGoogleSignedIn ? const Color(0xFFB91C1C) : const Color(0xFF1F2937),
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.4,
                                 ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(
-                                  'assets/images/google_logo.png',
-                                  width: 22,
-                                  height: 22,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return const Icon(
-                                      Icons.g_mobiledata_rounded,
-                                      color: Colors.redAccent,
-                                      size: 28,
-                                    );
-                                  },
-                                ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  profile.isGoogleSignedIn
-                                      ? 'Sign Out Google Account'
-                                      : 'Sign in with Google',
-                                  style: TextStyle(
-                                    color: profile.isGoogleSignedIn
-                                        ? AppColors.textPrimary
-                                        : const Color(0xFF1F2937),
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.4,
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       ],

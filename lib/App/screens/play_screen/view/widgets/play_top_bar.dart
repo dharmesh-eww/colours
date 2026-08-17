@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:colours/App/core/constants/color_constants.dart';
+import 'package:colours/App/screens/base_screen/view/unity_button.dart';
 import '../../controller/play_screen_controller.dart';
 
 class PlayTopBar extends StatelessWidget {
@@ -20,28 +21,20 @@ class PlayTopBar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // ── Back Button ─────────────────────────────────────────
-          GestureDetector(
+          UnityButton(
+            width: 44,
+            height: 44,
+            borderRadius: 14.0,
+            borderWidth: 1.0,
+            shadowHeight: 4.0,
+            baseColor: AppColors.homeCardNavy,
+            shadowColor: const Color(0xFFCBD5E1),
+            gradientColors: const [Colors.white, Color(0xFFF1F5F9)],
             onTap: () => Navigator.maybePop(context),
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.homeCardNavy,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.homeCardBorder, width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 6,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.arrow_back_rounded,
-                color: AppColors.textPrimary,
-                size: 22,
-              ),
+            child: const Icon(
+              Icons.arrow_back_rounded,
+              color: AppColors.textPrimary,
+              size: 22,
             ),
           ),
 
@@ -60,28 +53,20 @@ class PlayTopBar extends StatelessWidget {
           ),
 
           // ── Restart Button ──────────────────────────────────────
-          GestureDetector(
+          UnityButton(
+            width: 44,
+            height: 44,
+            borderRadius: 14.0,
+            borderWidth: 1.0,
+            shadowHeight: 4.0,
+            baseColor: AppColors.homeCardNavy,
+            shadowColor: const Color(0xFFCBD5E1),
+            gradientColors: const [Colors.white, Color(0xFFF1F5F9)],
             onTap: ctrl.onRestart,
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.homeCardNavy,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.homeCardBorder, width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 6,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.refresh_rounded,
-                color: AppColors.textPrimary,
-                size: 22,
-              ),
+            child: const Icon(
+              Icons.refresh_rounded,
+              color: AppColors.textPrimary,
+              size: 22,
             ),
           ),
         ],

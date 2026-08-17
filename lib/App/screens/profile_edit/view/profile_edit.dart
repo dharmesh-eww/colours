@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:statekit/statekit.dart';
 import 'package:colours/App/core/constants/avatar_data.dart';
 import 'package:colours/App/core/constants/color_constants.dart';
+import 'package:colours/App/screens/base_screen/view/unity_button.dart';
 import '../../base_screen/view/base_screen.dart';
 import '../binding/profile_edit_binding.dart';
 import '../controller/profile_edit_controller.dart';
@@ -32,21 +33,20 @@ class ProfileEdit extends StatekitView<ProfileEditController> implements Profile
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   child: Row(
                     children: [
-                      GestureDetector(
+                      UnityButton(
+                        width: 44,
+                        height: 44,
+                        borderRadius: 14.0,
+                        borderWidth: 1.0,
+                        shadowHeight: 4.0,
+                        baseColor: AppColors.homeCardNavy,
+                        shadowColor: const Color(0xFFCBD5E1),
+                        gradientColors: const [Colors.white, Color(0xFFF1F5F9)],
                         onTap: () => Navigator.pop(context),
-                        child: Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: AppColors.homeCardNavy,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: AppColors.homeCardBorder, width: 1),
-                          ),
-                          child: const Icon(
-                            Icons.arrow_back_rounded,
-                            color: AppColors.textPrimary,
-                            size: 22,
-                          ),
+                        child: const Icon(
+                          Icons.arrow_back_rounded,
+                          color: AppColors.textPrimary,
+                          size: 22,
                         ),
                       ),
                       const SizedBox(width: 14),
@@ -345,36 +345,29 @@ class ProfileEdit extends StatekitView<ProfileEditController> implements Profile
                         const SizedBox(height: 32),
 
                         // ── Save Changes Button ────────────────────────────
-                        GestureDetector(
+                        UnityButton(
+                          width: double.infinity,
+                          height: 54.0,
+                          borderRadius: 18.0,
+                          borderWidth: 2.0,
+                          shadowHeight: 5.0,
+                          baseColor: AppColors.primaryPurple,
+                          shadowColor: const Color(0xFF4338CA),
+                          gradientColors: AppColors.primaryGradient,
                           onTap: () async {
                             final ok = await ctrl.saveProfile();
                             if (ok && context.mounted) {
                               Navigator.pop(context, true);
                             }
                           },
-                          child: Container(
-                            width: double.infinity,
-                            height: 54,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(colors: AppColors.primaryGradient),
-                              borderRadius: BorderRadius.circular(18),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.primaryPurple.withValues(alpha: 0.4),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            child: const Center(
-                              child: Text(
-                                'SAVE CHANGES',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 1.0,
-                                ),
+                          child: const Center(
+                            child: Text(
+                              'SAVE CHANGES',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1.0,
                               ),
                             ),
                           ),
