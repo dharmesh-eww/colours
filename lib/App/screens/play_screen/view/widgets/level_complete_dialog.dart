@@ -1,218 +1,526 @@
 import 'package:flutter/material.dart';
-import 'package:colours/App/core/constants/color_constants.dart';
 import '../../controller/play_screen_controller.dart';
 
-class LevelCompleteDialog extends StatelessWidget {
+class LevelCompleteDialog extends StatefulWidget {
   final PlayScreenController controller;
 
   const LevelCompleteDialog({super.key, required this.controller});
 
   static Future<void> show(BuildContext context, PlayScreenController controller) {
-    return showDialog(
+    return showGeneralDialog(
       context: context,
-      barrierDismissible: true,
-      builder: (context) => LevelCompleteDialog(controller: controller),
+      barrierLabel: "LevelCompleteDialog",
+      barrierDismissible: false,
+      barrierColor: Colors.black.withValues(alpha: 0.75),
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, anim1, anim2) {
+        return LevelCompleteDialog(controller: controller);
+      },
+      transitionBuilder: (context, anim1, anim2, child) {
+        final scaleCurve = anim1.status == AnimationStatus.reverse
+            ? Curves.easeIn
+            : Curves.easeOutBack;
+        return ScaleTransition(
+          scale: CurvedAnimation(parent: anim1, curve: scaleCurve),
+          child: FadeTransition(opacity: anim1, child: child),
+        );
+      },
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    final ctrl = controller;
+  State<LevelCompleteDialog> createState() => _LevelCompleteDialogState();
+}
+
+class _LevelCompleteDialogState extends State<LevelCompleteDialog> {
+  bool _buttonsEnabled = false;
+  late int _starsEarned;
+
+  @override
+  void initState() {
+    super.initState();
+    final ctrl = widget.controller;
     final int minMoves = ctrl.puzzle?.minMoves ?? 10;
-    final int starsEarned = ctrl.moves <= minMoves
-        ? 3
-        : (ctrl.moves <= (minMoves * 1.5).round() ? 2 : 1);
+    _starsEarned = ctrl.moves <= minMoves ? 3 : (ctrl.moves <= (minMoves * 1.5).round() ? 2 : 1);
+
+    // Calculate total animation duration to enable buttons:
+    // Star 1 delay: 500ms
+    // Star 2 delay: 1000ms
+    // Star 3 delay: 1500ms
+    // Each star animates for 600ms
+    final int initialDelayMs = 500;
+    final int staggerDelayMs = 500;
+    final int animationDurationMs = 600;
+
+    final int totalTime = _starsEarned > 0
+        ? initialDelayMs + (_starsEarned - 1) * staggerDelayMs + animationDurationMs
+        : initialDelayMs;
+
+    Future.delayed(Duration(milliseconds: totalTime), () {
+      if (mounted) {
+        setState(() {
+          _buttonsEnabled = true;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ctrl = widget.controller;
+    final int minMoves = ctrl.puzzle?.minMoves ?? 10;
 
     return Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: AppColors.cardColor,
-          borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: AppColors.accentGold, width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.accentGold.withValues(alpha: 0.35),
-              blurRadius: 24,
-              spreadRadius: 2,
+      elevation: 0,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
+        children: [
+          // ── Main Dialog Container ─────────────────────────────────
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(top: 28), // Space for header ribbon
+            padding: const EdgeInsets.fromLTRB(20, 48, 20, 24),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(
+                color: const Color(0xFFFBBF24), // Golden frame
+                width: 6,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.6),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+                BoxShadow(
+                  color: const Color(0xFFD97706).withValues(alpha: 0.3), // Outer gold glow
+                  blurRadius: 30,
+                  spreadRadius: 2,
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // ── Trophy Icon Header ──────────────────────────────────────
-            Container(
-              width: 72,
-              height: 72,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 16),
+
+                // ── Stars Row (Curved Arc Layout) ───────────────────────
+                SizedBox(
+                  height: 100,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Star 1 (Left)
+                      Transform.rotate(
+                        angle: -0.2,
+                        child: Transform.translate(
+                          offset: const Offset(0, 10),
+                          child: AnimatedStar(
+                            isEarned: _starsEarned >= 1,
+                            delay: const Duration(milliseconds: 500),
+                            size: 58,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Star 2 (Middle)
+                      Transform.translate(
+                        offset: const Offset(0, -10),
+                        child: AnimatedStar(
+                          isEarned: _starsEarned >= 2,
+                          delay: const Duration(milliseconds: 1000),
+                          size: 76,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Star 3 (Right)
+                      Transform.rotate(
+                        angle: 0.2,
+                        child: Transform.translate(
+                          offset: const Offset(0, 10),
+                          child: AnimatedStar(
+                            isEarned: _starsEarned >= 3,
+                            delay: const Duration(milliseconds: 1500),
+                            size: 58,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // Subtitle
+                Text(
+                  'LEVEL ${ctrl.currentLevel} COMPLETED!',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF94A3B8), // Cool slate grey
+                    letterSpacing: 1.2,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // ── Stats Box ──────────────────────────────────────────
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A), // Darker inset background
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: const Color(0xFF334155), // Slate border
+                      width: 2,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildStatItem('MOVES', '${ctrl.moves}'),
+                      Container(width: 2, height: 32, color: const Color(0xFF334155)),
+                      _buildStatItem('TARGET', '$minMoves'),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 28),
+
+                // ── Action Buttons Row ─────────────────────────────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Home Button
+                    UnityButton(
+                      width: 60,
+                      height: 60,
+                      baseColor: const Color(0xFF3B82F6),
+                      shadowColor: const Color(0xFF1E3A8A),
+                      gradientColors: const [Color(0xFF60A5FA), Color(0xFF2563EB)],
+                      onTap: _buttonsEnabled
+                          ? () {
+                              Navigator.of(context).pop(); // Close dialog
+                              Navigator.of(
+                                context,
+                              ).pop(); // Close PlayScreen (exit to LevelSelection/Dashboard)
+                            }
+                          : null,
+                      child: const Icon(Icons.home_rounded, color: Colors.white, size: 28),
+                    ),
+                    const SizedBox(width: 14),
+                    // Next Level Button (Main Action)
+                    Expanded(
+                      child: UnityButton(
+                        width: 140,
+                        height: 60,
+                        baseColor: const Color(0xFF10B981),
+                        shadowColor: const Color(0xFF064E3B),
+                        gradientColors: const [Color(0xFF34D399), Color(0xFF059669)],
+                        onTap: _buttonsEnabled
+                            ? () {
+                                Navigator.of(context).pop();
+                                ctrl.loadNextLevel();
+                              }
+                            : null,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Text(
+                              'NEXT',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: 1.5,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black45,
+                                    offset: Offset(0, 2),
+                                    blurRadius: 2,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(width: 6),
+                            Icon(Icons.play_arrow_rounded, color: Colors.white, size: 26),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    // Replay Button
+                    UnityButton(
+                      width: 60,
+                      height: 60,
+                      baseColor: const Color(0xFFF59E0B),
+                      shadowColor: const Color(0xFF78350F),
+                      gradientColors: const [Color(0xFFFBBF24), Color(0xFFD97706)],
+                      onTap: _buttonsEnabled
+                          ? () {
+                              Navigator.of(context).pop();
+                              ctrl.onRestart();
+                            }
+                          : null,
+                      child: const Icon(Icons.replay_rounded, color: Colors.white, size: 28),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // ── Ribbon Banner Header ──────────────────────────────────
+          Positioned(
+            top: 0,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
                 gradient: const LinearGradient(
-                  colors: [AppColors.accentGold, Color(0xFFFF8F00)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFFEF4444), // Red
+                    Color(0xFFF97316), // Orange
+                    Color(0xFFEF4444), // Red
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFFFEF08A), // Light yellow highlights
+                  width: 3,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.accentGold.withValues(alpha: 0.5),
-                    blurRadius: 16,
+                    color: Colors.black.withValues(alpha: 0.4),
+                    blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              child: const Icon(Icons.emoji_events_rounded, color: Colors.white, size: 42),
-            ),
-
-            const SizedBox(height: 16),
-
-            // ── Title ──────────────────────────────────────────────────
-            const Text(
-              'LEVEL COMPLETE!',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w900,
-                color: AppColors.textPrimary,
-                letterSpacing: 1.5,
-              ),
-            ),
-
-            const SizedBox(height: 6),
-
-            Text(
-              'Level ${ctrl.currentLevel} Solved Perfectly',
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // ── Stars Row ──────────────────────────────────────────────
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(3, (index) {
-                final bool isEarned = index < starsEarned;
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Icon(
-                    Icons.star_rounded,
-                    color: isEarned ? AppColors.accentGold : AppColors.divider,
-                    size: 36,
-                  ),
-                );
-              }),
-            ),
-
-            const SizedBox(height: 18),
-
-            // ── Stats Box ──────────────────────────────────────────────
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: AppColors.homeNavyDark,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.divider),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildStatItem('MOVES', '${ctrl.moves}'),
-                  Container(width: 1, height: 24, color: AppColors.divider),
-                  _buildStatItem('TARGET', '$minMoves'),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // ── Next Level Action Button ──────────────────────────────
-            GestureDetector(
-              onTap: () {
-                Navigator.of(context).pop();
-                ctrl.loadNextLevel();
-              },
-              child: Container(
-                width: double.infinity,
-                height: 54,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF56C656), Color(0xFF2E7D32)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF56C656).withValues(alpha: 0.4),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                  border: Border.all(color: const Color(0xFF81C784), width: 1.5),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Text(
-                      'NEXT LEVEL',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 24),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // ── Replay Button ──────────────────────────────────────────
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                ctrl.onRestart();
-              },
-              child: Text(
-                'REPLAY LEVEL',
+              child: const Text(
+                'VICTORY!',
                 style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  letterSpacing: 2.0,
+                  shadows: [Shadow(color: Colors.black87, offset: Offset(0, 2), blurRadius: 4)],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildStatItem(String label, String value) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           label,
-          style: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
+          style: const TextStyle(
+            color: Color(0xFF64748B), // Slate 500
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.0,
           ),
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 4),
         Text(
           value,
-          style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w900),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.5,
+          ),
         ),
       ],
+    );
+  }
+}
+
+// ── Animated Star Widget with elastic/bounce scaling ───────────────
+class AnimatedStar extends StatefulWidget {
+  final bool isEarned;
+  final Duration delay;
+  final double size;
+
+  const AnimatedStar({super.key, required this.isEarned, required this.delay, required this.size});
+
+  @override
+  State<AnimatedStar> createState() => _AnimatedStarState();
+}
+
+class _AnimatedStarState extends State<AnimatedStar> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  bool _isAnimating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
+
+    if (widget.isEarned) {
+      Future.delayed(widget.delay, () {
+        if (mounted) {
+          setState(() {
+            _isAnimating = true;
+          });
+          _controller.forward();
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Base grey/white star:
+    final Widget baseStar = Stack(
+      alignment: Alignment.center,
+      children: [
+        Icon(Icons.star_rounded, color: Colors.black.withValues(alpha: 0.4), size: widget.size + 4),
+        Icon(Icons.star_rounded, color: Colors.white.withValues(alpha: 0.15), size: widget.size),
+      ],
+    );
+
+    if (!widget.isEarned) {
+      return baseStar;
+    }
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        baseStar,
+        ScaleTransition(
+          scale: _scaleAnimation,
+          child: _isAnimating
+              ? Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Icon(
+                      Icons.star_rounded,
+                      color: Colors.black.withValues(alpha: 0.5),
+                      size: widget.size + 4,
+                    ),
+                    ShaderMask(
+                      shaderCallback: (bounds) => const LinearGradient(
+                        colors: [Color(0xFFFFDF00), Color(0xFFFFB300), Color(0xFFFF8F00)],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ).createShader(bounds),
+                      child: Icon(Icons.star_rounded, color: Colors.white, size: widget.size),
+                    ),
+                  ],
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Unity Button Widget with 3D press effect and disabled state ───
+class UnityButton extends StatefulWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+  final Color baseColor;
+  final Color shadowColor;
+  final List<Color> gradientColors;
+  final double width;
+  final double height;
+
+  const UnityButton({
+    super.key,
+    required this.child,
+    this.onTap,
+    required this.baseColor,
+    required this.shadowColor,
+    required this.gradientColors,
+    this.width = 60,
+    this.height = 60,
+  });
+
+  @override
+  State<UnityButton> createState() => _UnityButtonState();
+}
+
+class _UnityButtonState extends State<UnityButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isEnabled = widget.onTap != null;
+
+    return GestureDetector(
+      onTapDown: isEnabled ? (_) => setState(() => _isPressed = true) : null,
+      onTapUp: isEnabled
+          ? (_) {
+              setState(() => _isPressed = false);
+              widget.onTap?.call();
+            }
+          : null,
+      onTapCancel: isEnabled ? () => setState(() => _isPressed = false) : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 80),
+        width: widget.width,
+        height: widget.height,
+        margin: EdgeInsets.only(top: _isPressed ? 6.0 : 0.0, bottom: _isPressed ? 0.0 : 6.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            colors: isEnabled
+                ? widget.gradientColors
+                : [Colors.grey.shade400, Colors.grey.shade500],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+          border: Border.all(
+            color: isEnabled ? Colors.white.withValues(alpha: 0.4) : Colors.white24,
+            width: 2,
+          ),
+          boxShadow: _isPressed
+              ? []
+              : [
+                  // 3D bottom bezel shadow
+                  BoxShadow(
+                    color: isEnabled ? widget.shadowColor : Colors.grey.shade600,
+                    offset: const Offset(0, 6),
+                  ),
+                  // Subtle ambient shadow
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 4,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+        ),
+        alignment: Alignment.center,
+        child: widget.child,
+      ),
     );
   }
 }

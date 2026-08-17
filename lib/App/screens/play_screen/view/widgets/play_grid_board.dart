@@ -85,9 +85,8 @@ class _DraggableTileCell extends StatelessWidget {
               return baseTileVisual;
             }
 
-            return LongPressDraggable<int>(
+            return Draggable<int>(
               data: index,
-              delay: const Duration(milliseconds: 100),
               feedback: Material(
                 color: Colors.transparent,
                 child: SizedBox(
