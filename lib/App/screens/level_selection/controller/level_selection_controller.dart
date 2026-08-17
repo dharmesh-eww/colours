@@ -5,6 +5,11 @@ import '../binding/level_selection_binding.dart';
 class LevelSelectionController extends StateController<LevelSelectionBinding> {
   final LevelSelectionRepository _repository = LevelSelectionRepository();
 
+  // ── Player Info ────────────────────────────────────────────────────────────
+  String playerName = 'Player';
+  int playerLevel = 24;
+  double levelProgress = 0.65;
+
   // ── Stats ──────────────────────────────────────────────────────────────────
   int starsCollected = 0;
   int totalStars = 0;
@@ -12,6 +17,9 @@ class LevelSelectionController extends StateController<LevelSelectionBinding> {
 
   // ── Levels ─────────────────────────────────────────────────────────────────
   List<LevelData> levels = [];
+
+  // ── Page State ──────────────────────────────────────────────────────────────
+  int currentPage = 0;
 
   @override
   void onInit() {
@@ -23,6 +31,11 @@ class LevelSelectionController extends StateController<LevelSelectionBinding> {
     totalStars = _repository.getTotalStars();
     coins = _repository.getCoins();
     levels = _repository.getLevels();
+    update();
+  }
+
+  void onPageChanged(int index) {
+    currentPage = index;
     update();
   }
 

@@ -16,23 +16,23 @@ enum LevelState { completed, current, locked }
 class LevelSelectionRepository {
   static const int maxLevels = 900;
 
-  int getStarsCollected() => 45;
-  int getTotalStars() => maxLevels * 3; // 2700 stars
+  int getStarsCollected() => 58;
+  int getTotalStars() => 300; // 300 stars
   int getCoins() => 1250;
 
   List<LevelData> getLevels() {
     return List.generate(maxLevels, (i) {
       final int levelNum = i + 1;
-      if (levelNum <= 15) {
+      if (levelNum <= 5) {
         return LevelData(
           number: levelNum,
           starsEarned: 3,
           state: LevelState.completed,
         );
-      } else if (levelNum == 16) {
+      } else if (levelNum <= 9) {
         return LevelData(
           number: levelNum,
-          starsEarned: 0,
+          starsEarned: 3,
           state: LevelState.current,
         );
       } else {
