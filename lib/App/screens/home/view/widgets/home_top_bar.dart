@@ -22,8 +22,15 @@ class HomeTopBar extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               decoration: BoxDecoration(
                 color: AppColors.homeCardNavy,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.homeCardBorder, width: 1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.homeCardBorder, width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
@@ -112,17 +119,24 @@ class HomeTopBar extends StatelessWidget {
 
           // ── Settings ────────────────────────────────────────────
           Container(
-            width: 38,
-            height: 38,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: AppColors.homeCardNavy,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.homeCardBorder, width: 1),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.homeCardBorder, width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: const Icon(
               Icons.settings_rounded,
               color: AppColors.textSecondary,
-              size: 20,
+              size: 22,
             ),
           ),
         ],
@@ -145,11 +159,18 @@ class _StatChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.homeCardNavy,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.homeCardBorder, width: 1),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.homeCardBorder, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -165,15 +186,15 @@ class _StatChip extends StatelessWidget {
             ),
           ),
           if (showPlus) ...[
-            const SizedBox(width: 3),
+            const SizedBox(width: 4),
             Container(
-              width: 15,
-              height: 15,
+              width: 16,
+              height: 16,
               decoration: const BoxDecoration(
                 color: AppColors.playButtonGreen,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.add, color: Colors.white, size: 11),
+              child: const Icon(Icons.add, color: Colors.white, size: 12),
             ),
           ],
         ],

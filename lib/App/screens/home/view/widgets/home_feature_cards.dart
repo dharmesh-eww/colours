@@ -71,14 +71,14 @@ class _FeatureCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
       decoration: BoxDecoration(
-        color: AppColors.homeCardNavy,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.homeCardBorder, width: 1),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -104,7 +104,7 @@ class _FeatureCard extends StatelessWidget {
             style: TextStyle(
               color: subtitleColor,
               fontSize: 10,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -122,20 +122,20 @@ class _CalendarIcon extends StatelessWidget {
       width: 52,
       height: 52,
       decoration: BoxDecoration(
-        color: const Color(0xFF1A2E4A),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.homeCardBorder),
+        color: const Color(0xFF1E3A8A), // Blue 900
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1),
       ),
       child: Stack(
         alignment: Alignment.center,
         children: [
           const Icon(Icons.calendar_month_rounded,
-              color: Color(0xFF5B9BD5), size: 34),
+              color: Color(0xFF60A5FA), size: 32),
           Positioned(
-            bottom: 8,
+            bottom: 6,
             child: Container(
-              padding: const EdgeInsets.all(3),
-              decoration: BoxDecoration(
+              padding: const EdgeInsets.all(2),
+              decoration: const BoxDecoration(
                 color: AppColors.accentGold,
                 shape: BoxShape.circle,
               ),
@@ -158,17 +158,17 @@ class _TrophyIcon extends StatelessWidget {
       height: 52,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF2A1A00), Color(0xFF1A1000)],
+          colors: [Color(0xFF451A03), Color(0xFF78350F)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.homeCardBorder),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1),
       ),
       child: const Icon(
         Icons.emoji_events_rounded,
         color: AppColors.accentGold,
-        size: 36,
+        size: 34,
       ),
     );
   }
@@ -184,17 +184,17 @@ class _StatsIcon extends StatelessWidget {
       height: 52,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF1A0A2E), Color(0xFF10062A)],
+          colors: [Color(0xFF1E1B4B), Color(0xFF312E81)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.homeCardBorder),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1),
       ),
       child: const Icon(
         Icons.bar_chart_rounded,
         color: AppColors.primaryPurpleLight,
-        size: 36,
+        size: 34,
       ),
     );
   }
