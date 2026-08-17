@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:colours/App/core/constants/color_constants.dart';
 import '../../controller/play_screen_controller.dart';
 
 class LevelCompleteDialog extends StatefulWidget {
@@ -11,7 +12,7 @@ class LevelCompleteDialog extends StatefulWidget {
       context: context,
       barrierLabel: "LevelCompleteDialog",
       barrierDismissible: false,
-      barrierColor: Colors.black.withValues(alpha: 0.75),
+      barrierColor: Colors.black.withValues(alpha: 0.3),
       transitionDuration: const Duration(milliseconds: 300),
       pageBuilder: (context, anim1, anim2) {
         return LevelCompleteDialog(controller: controller);
@@ -85,7 +86,7 @@ class _LevelCompleteDialogState extends State<LevelCompleteDialog> {
             padding: const EdgeInsets.fromLTRB(20, 48, 20, 24),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                colors: [AppColors.surface, AppColors.homeNavyDark],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -96,13 +97,13 @@ class _LevelCompleteDialogState extends State<LevelCompleteDialog> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
+                  color: Colors.black.withValues(alpha: 0.12),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
                 ),
                 BoxShadow(
-                  color: const Color(0xFFD97706).withValues(alpha: 0.3), // Outer gold glow
-                  blurRadius: 30,
+                  color: const Color(0xFFD97706).withValues(alpha: 0.15), // Outer gold glow
+                  blurRadius: 32,
                   spreadRadius: 2,
                 ),
               ],
@@ -165,7 +166,7 @@ class _LevelCompleteDialogState extends State<LevelCompleteDialog> {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF94A3B8), // Cool slate grey
+                    color: AppColors.textSecondary, // Slate grey
                     letterSpacing: 1.2,
                   ),
                 ),
@@ -176,10 +177,10 @@ class _LevelCompleteDialogState extends State<LevelCompleteDialog> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A), // Darker inset background
+                    color: AppColors.homeNavyDark, // Light inset background
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: const Color(0xFF334155), // Slate border
+                      color: AppColors.homeCardBorder, // Slate border
                       width: 2,
                     ),
                   ),
@@ -187,7 +188,7 @@ class _LevelCompleteDialogState extends State<LevelCompleteDialog> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _buildStatItem('MOVES', '${ctrl.moves}'),
-                      Container(width: 2, height: 32, color: const Color(0xFF334155)),
+                      Container(width: 2, height: 32, color: AppColors.divider),
                       _buildStatItem('TARGET', '$minMoves'),
                     ],
                   ),
@@ -300,7 +301,7 @@ class _LevelCompleteDialogState extends State<LevelCompleteDialog> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.4),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -313,7 +314,7 @@ class _LevelCompleteDialogState extends State<LevelCompleteDialog> {
                   fontWeight: FontWeight.w900,
                   color: Colors.white,
                   letterSpacing: 2.0,
-                  shadows: [Shadow(color: Colors.black87, offset: Offset(0, 2), blurRadius: 4)],
+                  shadows: [Shadow(color: Colors.black45, offset: Offset(0, 2), blurRadius: 4)],
                 ),
               ),
             ),
@@ -330,7 +331,7 @@ class _LevelCompleteDialogState extends State<LevelCompleteDialog> {
         Text(
           label,
           style: const TextStyle(
-            color: Color(0xFF64748B), // Slate 500
+            color: AppColors.textSecondary, // Slate 500
             fontSize: 12,
             fontWeight: FontWeight.w800,
             letterSpacing: 1.0,
@@ -340,7 +341,7 @@ class _LevelCompleteDialogState extends State<LevelCompleteDialog> {
         Text(
           value,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppColors.textPrimary, // Dark slate text color for readability
             fontSize: 22,
             fontWeight: FontWeight.w900,
             letterSpacing: 0.5,
@@ -402,8 +403,8 @@ class _AnimatedStarState extends State<AnimatedStar> with SingleTickerProviderSt
     final Widget baseStar = Stack(
       alignment: Alignment.center,
       children: [
-        Icon(Icons.star_rounded, color: Colors.black.withValues(alpha: 0.4), size: widget.size + 4),
-        Icon(Icons.star_rounded, color: Colors.white.withValues(alpha: 0.15), size: widget.size),
+        Icon(Icons.star_rounded, color: Colors.black.withValues(alpha: 0.08), size: widget.size + 4),
+        Icon(Icons.star_rounded, color: const Color(0xFFE2E8F0), size: widget.size),
       ],
     );
 
@@ -423,7 +424,7 @@ class _AnimatedStarState extends State<AnimatedStar> with SingleTickerProviderSt
                   children: [
                     Icon(
                       Icons.star_rounded,
-                      color: Colors.black.withValues(alpha: 0.5),
+                      color: Colors.black.withValues(alpha: 0.2),
                       size: widget.size + 4,
                     ),
                     ShaderMask(
