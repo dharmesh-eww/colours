@@ -16,14 +16,14 @@ class PlayStatsBar extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
-          color: AppColors.homeCardNavy,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.homeCardBorder, width: 1),
+          border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -73,7 +73,7 @@ class PlayStatsBar extends StatelessWidget {
     return Container(
       height: 28,
       width: 1,
-      color: AppColors.homeCardBorder,
+      color: const Color(0xFFE2E8F0),
     );
   }
 }

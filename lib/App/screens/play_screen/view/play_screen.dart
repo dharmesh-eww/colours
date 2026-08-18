@@ -17,13 +17,11 @@ class PlayScreen extends StatekitView<PlayScreenController> implements PlayScree
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
-        backgroundColor: AppColors.homeNavyDark,
         body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: AppColors.playScreenGradient,
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/home-background.png'),
+              fit: BoxFit.cover,
             ),
           ),
           child: StateBuilder<PlayScreenController>(
