@@ -21,11 +21,6 @@ class LevelSelectionController extends StateController<LevelSelectionBinding> {
   // ── Page State ──────────────────────────────────────────────────────────────
   int currentPage = 0;
 
-  @override
-  void onInit() {
-    super.onInit();
-  }
-
   void loadData() {
     starsCollected = _repository.getStarsCollected();
     totalStars = _repository.getTotalStars();
@@ -37,10 +32,5 @@ class LevelSelectionController extends StateController<LevelSelectionBinding> {
   void onPageChanged(int index) {
     currentPage = index;
     update();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }

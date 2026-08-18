@@ -30,23 +30,15 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 0,
       centerTitle: centerTitle,
       automaticallyImplyLeading: false,
-      leading:
-          showBackButton
-              ? _buildBackButton(context)
-              : (leading != null ? leading : null),
+      leading: showBackButton ? _buildBackButton(context) : (leading),
       title:
           title ??
           (titleText != null
               ? ShaderMask(
-                shaderCallback:
-                    (bounds) => const LinearGradient(
-                      colors: AppColors.primaryGradient,
-                    ).createShader(bounds),
-                child: Text(
-                  titleText!,
-                  style: AppTextStyle.boldWhite(fontSize: 20),
-                ),
-              )
+                  shaderCallback: (bounds) =>
+                      const LinearGradient(colors: AppColors.primaryGradient).createShader(bounds),
+                  child: Text(titleText!, style: AppTextStyle.boldWhite(fontSize: 20)),
+                )
               : null),
       actions: actions,
     );
@@ -64,11 +56,7 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
       shadowColor: const Color(0xFFCBD5E1),
       gradientColors: const [Colors.white, Color(0xFFF1F5F9)],
       onTap: () => Navigator.maybePop(context),
-      child: const Icon(
-        Icons.arrow_back_ios_new_rounded,
-        color: AppColors.textPrimary,
-        size: 18,
-      ),
+      child: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 18),
     );
   }
 

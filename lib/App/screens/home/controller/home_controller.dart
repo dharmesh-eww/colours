@@ -27,11 +27,6 @@ class HomeController extends StateController<HomeBinding> {
   int levelsCompleted = 0;
   int totalLevels = 0;
 
-  @override
-  void onInit() {
-    super.onInit();
-  }
-
   void loadData() {
     playerName = _repository.getPlayerName();
     playerLevel = _repository.getPlayerLevel();
@@ -51,10 +46,5 @@ class HomeController extends StateController<HomeBinding> {
     totalLevels = _repository.getTotalLevels();
 
     update();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }
