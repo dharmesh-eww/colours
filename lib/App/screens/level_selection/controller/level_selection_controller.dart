@@ -18,19 +18,11 @@ class LevelSelectionController extends StateController<LevelSelectionBinding> {
   // ── Levels ─────────────────────────────────────────────────────────────────
   List<LevelData> levels = [];
 
-  // ── Page State ──────────────────────────────────────────────────────────────
-  int currentPage = 0;
-
   void loadData() {
     starsCollected = _repository.getStarsCollected();
     totalStars = _repository.getTotalStars();
     coins = _repository.getCoins();
     levels = _repository.getLevels();
-    update();
-  }
-
-  void onPageChanged(int index) {
-    currentPage = index;
     update();
   }
 }

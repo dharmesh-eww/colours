@@ -1,9 +1,10 @@
+import 'dart:math' as math;
 import 'package:statekit/statekit.dart';
 import 'package:flutter/material.dart';
 import 'package:colours/App/core/constants/color_constants.dart';
 import '../binding/level_selection_binding.dart';
 import '../controller/level_selection_controller.dart';
-import 'widgets/level_top_bar.dart';
+import '../repository/level_selection_repository.dart';
 import 'widgets/level_chapter_tile.dart';
 
 class LevelSelection extends StatekitView<LevelSelectionController>
@@ -22,35 +23,34 @@ class LevelSelection extends StatekitView<LevelSelectionController>
       child: StateBuilder<LevelSelectionController>(
         controller: controller,
         builder: (context, ctrl, child) {
+          // Find the active level (first level with state == LevelState.current)
+          final activeLevelData = ctrl.levels.firstWhere(
+            (l) => l.state == LevelState.current,
+            orElse: () => ctrl.levels.first,
+          );
+          final int activeLevel = activeLevelData.number;
+
+          // Determine the range of 10 levels to show
+          final int startLevelIndex = ((activeLevel - 1) / 10).floor() * 10;
+          final int endLevelIndex = math.min(startLevelIndex + 10, ctrl.levels.length);
+          final displayLevels = ctrl.levels.sublist(startLevelIndex, endLevelIndex);
+
           return Stack(
             children: [
-              // 1. Interactive Winding Map Nodes PageView (full screen)
+              // 1. Interactive Winding Map Nodes (full screen)
               Positioned.fill(
                 child: LevelGrid(
-                  levels: ctrl.levels,
-                  onPageChanged: ctrl.onPageChanged,
+                  levels: displayLevels,
                 ),
               ),
 
-              // 2. Safe Area UI overlays (Top bar, Title)
+              // 2. Safe Area UI overlays (Title)
               SafeArea(
                 child: IgnorePointer(
                   ignoring: true, // Let taps pass through to map nodes below
                   child: Column(
                     children: [
-                      // Allow interactions on the top bar
-                      Row(
-                        children: [
-                          Expanded(
-                            child: IgnorePointer(
-                              ignoring: false,
-                              child: LevelTopBar(controller: ctrl),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 20),
 
                       // LEVELS Title
                       Row(
@@ -78,9 +78,9 @@ class LevelSelection extends StatekitView<LevelSelectionController>
                         ],
                       ),
                       const SizedBox(height: 4),
-                      const Text(
-                        'Continue Your Journey',
-                        style: TextStyle(
+                      Text(
+                        'Levels ${startLevelIndex + 1} - $endLevelIndex',
+                        style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -105,31 +105,7 @@ class LevelSelection extends StatekitView<LevelSelectionController>
                 ),
               ),
 
-              // 4. Pagination Dots (bottom-center overlay)
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 34,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(3, (i) {
-                    final isActive = ctrl.currentPage == i;
-                    return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: isActive
-                            ? const Color(0xFF3B82F6)
-                            : const Color(0xFFCBD5E1).withValues(alpha: 0.6),
-                        shape: BoxShape.circle,
-                      ),
-                    );
-                  }),
-                ),
-              ),
-
-              // 5. DAILY Button (bottom-right overlay)
+              // 4. DAILY Button (bottom-right overlay)
               Positioned(
                 right: 16,
                 bottom: 24,

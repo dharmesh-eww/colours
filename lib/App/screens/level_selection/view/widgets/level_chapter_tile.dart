@@ -1,68 +1,43 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:colours/App/core/constants/color_constants.dart';
 import 'package:colours/App/routes/app_routes.dart';
 import '../../repository/level_selection_repository.dart';
 
 // List of relative coordinates (x, y) calibrated for full screen height alignment with the background image
+// Exactly 10 slots distributed along the winding S-curve road
 final List<Offset> mapNodeCoordinates = [
   const Offset(0.18, 0.19), // Level 1 (near cave/flag)
-  const Offset(0.31, 0.22), // Level 2
-  const Offset(0.44, 0.24), // Level 3
-  const Offset(0.57, 0.26), // Level 4
-  const Offset(0.70, 0.29), // Level 5
-  const Offset(0.76, 0.35), // Level 6
-  const Offset(0.66, 0.38), // Level 7
-  const Offset(0.54, 0.40), // Level 8
-  const Offset(0.41, 0.43), // Level 9
-  const Offset(0.30, 0.47), // Level 10
-  const Offset(0.33, 0.53), // Level 11
-  const Offset(0.45, 0.55), // Level 12
-  const Offset(0.57, 0.58), // Level 13
-  const Offset(0.69, 0.61), // Level 14
-  const Offset(0.63, 0.69), // Level 15
-  const Offset(0.49, 0.72), // Level 16
+  const Offset(0.38, 0.23), // Level 2
+  const Offset(0.58, 0.26), // Level 3
+  const Offset(0.72, 0.31), // Level 4
+  const Offset(0.64, 0.38), // Level 5
+  const Offset(0.44, 0.42), // Level 6
+  const Offset(0.30, 0.48), // Level 7
+  const Offset(0.42, 0.54), // Level 8
+  const Offset(0.62, 0.58), // Level 9
+  const Offset(0.66, 0.67), // Level 10
 ];
 
 class LevelGrid extends StatelessWidget {
   final List<LevelData> levels;
-  final ValueChanged<int> onPageChanged;
 
   const LevelGrid({
     super.key,
     required this.levels,
-    required this.onPageChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Total pages = (levels.length / 16).ceil()
-    final int pageCount = (levels.length / 16).ceil();
-
-    return PageView.builder(
-      physics: const BouncingScrollPhysics(),
-      itemCount: pageCount,
-      onPageChanged: onPageChanged,
-      itemBuilder: (context, pageIndex) {
-        final int startIndex = pageIndex * 16;
-        final int endIndex = math.min(startIndex + 16, levels.length);
-        final pageLevels = levels.sublist(startIndex, endIndex);
-
-        return _MapPage(
-          pageIndex: pageIndex,
-          levels: pageLevels,
-        );
-      },
+    return _MapPage(
+      levels: levels,
     );
   }
 }
 
 class _MapPage extends StatelessWidget {
-  final int pageIndex;
   final List<LevelData> levels;
 
   const _MapPage({
-    required this.pageIndex,
     required this.levels,
   });
 
@@ -80,17 +55,17 @@ class _MapPage extends StatelessWidget {
             final offset = mapNodeCoordinates[i];
 
             return Positioned(
-              left: offset.dx * width - 28, // Node width is 56, half is 28
-              top: offset.dy * height - 28, // Node height is 56
+              left: offset.dx * width - 21, // Node width is 42, half is 21
+              top: offset.dy * height - 21, // Node height is 42
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
                   LevelCell(level: level),
-                  // Green Flag on Level 1 of Page 1
-                  if (pageIndex == 0 && level.number == 1)
+                  // Green Flag on the first level of the current page/range
+                  if (i == 0)
                     Positioned(
-                      top: -30,
-                      left: 22,
+                      top: -24,
+                      left: 15,
                       child: _LevelFlag(),
                     ),
                 ],
@@ -120,8 +95,8 @@ class LevelCell extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 56,
-            height: 56,
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
@@ -133,30 +108,30 @@ class LevelCell extends StatelessWidget {
                 BoxShadow(
                   color: colors.shadow,
                   blurRadius: 0,
-                  offset: const Offset(0, 4),
+                  offset: const Offset(0, 3),
                 ),
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.15),
-                  blurRadius: 4,
-                  offset: const Offset(0, 3),
+                  blurRadius: 3,
+                  offset: const Offset(0, 2),
                 ),
               ],
-              border: Border.all(color: colors.border, width: 2.5),
+              border: Border.all(color: colors.border, width: 2.0),
             ),
             child: Center(
               child: level.state == LevelState.locked
-                  ? const Icon(Icons.lock_rounded, color: Colors.white70, size: 20)
+                  ? const Icon(Icons.lock_rounded, color: Colors.white70, size: 16)
                   : Text(
                       '${level.number}',
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 18,
+                        fontSize: 14,
                         fontWeight: FontWeight.w900,
                         shadows: [
                           Shadow(
                             color: Color(0x66000000),
                             blurRadius: 4,
-                            offset: Offset(0, 2),
+                            offset: Offset(0, 1.5),
                           ),
                         ],
                       ),
