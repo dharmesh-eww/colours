@@ -1,17 +1,29 @@
 import 'package:statekit/statekit.dart';
-import '../repository/settings_screen_repository.dart';
 import '../binding/settings_screen_binding.dart';
 
 class SettingsScreenController extends StateController<SettingsScreenBinding> {
-  final SettingsScreenRepository _repository = SettingsScreenRepository();
+  bool isSoundEnabled = true;
+  bool isMusicEnabled = true;
+  bool isVibrationEnabled = true;
+  String currentLanguage = 'English';
 
-  @override
-  void onInit() {
-    super.onInit();
+  void toggleSound() {
+    isSoundEnabled = !isSoundEnabled;
+    update();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
+  void toggleMusic() {
+    isMusicEnabled = !isMusicEnabled;
+    update();
+  }
+
+  void toggleVibration() {
+    isVibrationEnabled = !isVibrationEnabled;
+    update();
+  }
+
+  void setLanguage(String language) {
+    currentLanguage = language;
+    update();
   }
 }
