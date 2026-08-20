@@ -4,72 +4,69 @@ import 'package:colours/App/core/constants/color_constants.dart';
 import 'package:colours/App/routes/app_routes.dart';
 import '../../repository/level_selection_repository.dart';
 
-// Helper to calculate the horizontal coordinates for a level cell based on index
-double getXOffsetForIndex(int index, double screenWidth) {
+// S-curve frequency (tighter waves = smaller vertical distance between curves)
+const double _frequency = 0.85;
+
+// Helper to calculate the horizontal coordinates for a level cell based on index (double input)
+double getXOffsetForDoubleIndex(double index, double screenWidth) {
   final double center = screenWidth * 0.5;
   // Amplitude limits the curve so nodes stay inside a safe horizontal range
   final double amplitude = screenWidth * 0.24;
-  // Serpentine wave frequency
-  final double frequency = 0.5;
-  return center + amplitude * math.sin(index * frequency);
+  return center + amplitude * math.sin(index * _frequency);
 }
 
-// Biome decoration calculator based on level progress, using solid colors and gradients at boundaries
+// Helper to calculate the derivative (tangent slope) of the S-curve at a given index
+double getDXOffsetForDoubleIndex(double index, double screenWidth) {
+  final double amplitude = screenWidth * 0.24;
+  return amplitude * _frequency * math.cos(index * _frequency);
+}
+
+// Helper for integer indices, wrapping the double-based calculator
+double getXOffsetForIndex(int index, double screenWidth) {
+  return getXOffsetForDoubleIndex(index.toDouble(), screenWidth);
+}
+
+// Color interpolator for continuous gradient backgrounds shifting every 20 levels
+Color getBiomeColorForIndex(double idx) {
+  final List<Color> colors = [
+    const Color(0xFFDCFCE7), // Meadow Green (0)
+    const Color(0xFFFEF3C7), // Desert Sand (20)
+    const Color(0xFFF3E8FF), // Mystic Forest Purple (40)
+    const Color(0xFFECFDF5), // Ice Mint (60)
+    const Color(0xFFEFF6FF), // Sky Blue (80)
+    const Color(0xFFFEE2E2), // Rose Pink (100)
+  ];
+
+  const double interval = 20.0;
+  final double indexInCycle = idx % (colors.length * interval);
+
+  // Safe clamping for negative indexes (e.g. bottom boundary index -0.5 of tile 0)
+  final double positiveIndex = indexInCycle < 0
+      ? (colors.length * interval) + indexInCycle
+      : indexInCycle;
+
+  final int segmentIndex = (positiveIndex / interval).floor();
+  final double fraction = (positiveIndex % interval) / interval;
+
+  final Color startColor = colors[segmentIndex];
+  final Color endColor = colors[(segmentIndex + 1) % colors.length];
+
+  return Color.lerp(startColor, endColor, fraction) ?? startColor;
+}
+
+// Returns a seamless vertical gradient for each tile segment
 BoxDecoration getBiomeDecoration(int index) {
-  const Color meadow = Color(0xFFDCFCE7);
-  const Color desert = Color(0xFFFEF3C7);
-  const Color forest = Color(0xFFF3E8FF);
-  const Color ice = Color(0xFFECFDF5);
-  const Color cave = Color(0xFFEFF6FF);
+  final double idx = index.toDouble();
+  final Color bottomColor = getBiomeColorForIndex(idx - 0.5);
+  final Color topColor = getBiomeColorForIndex(idx + 0.5);
 
-  if (index == 99) {
-    return const BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.bottomCenter,
-        end: Alignment.topCenter,
-        colors: [meadow, desert],
-      ),
-    );
-  } else if (index == 199) {
-    return const BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.bottomCenter,
-        end: Alignment.topCenter,
-        colors: [desert, forest],
-      ),
-    );
-  } else if (index == 299) {
-    return const BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.bottomCenter,
-        end: Alignment.topCenter,
-        colors: [forest, ice],
-      ),
-    );
-  } else if (index == 399) {
-    return const BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.bottomCenter,
-        end: Alignment.topCenter,
-        colors: [ice, cave],
-      ),
-    );
-  }
-
-  // Return solid color per biome block to eliminate horizontal lines
-  Color color = meadow;
-  if (index < 100) {
-    color = meadow;
-  } else if (index < 200) {
-    color = desert;
-  } else if (index < 300) {
-    color = forest;
-  } else if (index < 400) {
-    color = ice;
-  } else {
-    color = cave;
-  }
-  return BoxDecoration(color: color);
+  return BoxDecoration(
+    gradient: LinearGradient(
+      begin: Alignment.bottomCenter,
+      end: Alignment.topCenter,
+      colors: [bottomColor, topColor],
+    ),
+  );
 }
 
 class MapRoadTile extends StatelessWidget {
@@ -77,12 +74,7 @@ class MapRoadTile extends StatelessWidget {
   final LevelData level;
   final bool isLast;
 
-  const MapRoadTile({
-    super.key,
-    required this.index,
-    required this.level,
-    required this.isLast,
-  });
+  const MapRoadTile({super.key, required this.index, required this.level, required this.isLast});
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +97,7 @@ class MapRoadTile extends StatelessWidget {
                 ),
               ),
 
-              // 2. Dynamic Side Decorations
+              // 2. Dynamic Side Decorations (matching S-curve frequency offsets)
               _buildDecorations(context, index, w),
 
               // 3. Level Cell Node
@@ -121,11 +113,7 @@ class MapRoadTile extends StatelessWidget {
                       Positioned(
                         top: -24,
                         left: 15,
-                        child: Image.asset(
-                          'assets/images/flag.png',
-                          width: 38,
-                          height: 38,
-                        ),
+                        child: Image.asset('assets/images/flag.png', width: 38, height: 38),
                       ),
                   ],
                 ),
@@ -138,7 +126,8 @@ class MapRoadTile extends StatelessWidget {
   }
 
   Widget _buildDecorations(BuildContext context, int idx, double w) {
-    final bool curveIsRight = math.sin(idx * 0.5) > 0;
+    // Determine curve side using the current wave frequency
+    final bool curveIsRight = math.sin(idx * _frequency) > 0;
     final double leftOffset = curveIsRight ? 45.0 : w - 95.0;
 
     String assetPath = 'assets/images/tree_leafy.png';
@@ -158,11 +147,7 @@ class MapRoadTile extends StatelessWidget {
     return Positioned(
       left: leftOffset,
       top: 36.0, // Vertically centered inside the 120px tall tile
-      child: Image.asset(
-        assetPath,
-        width: size,
-        height: size,
-      ),
+      child: Image.asset(assetPath, width: size, height: size),
     );
   }
 }
@@ -172,53 +157,47 @@ class RoadPainter extends CustomPainter {
   final bool isLast;
   final double screenWidth;
 
-  RoadPainter({
-    required this.index,
-    required this.isLast,
-    required this.screenWidth,
-  });
+  RoadPainter({required this.index, required this.isLast, required this.screenWidth});
 
   @override
   void paint(Canvas canvas, Size size) {
     final double w = screenWidth;
+    final double idx = index.toDouble();
+    final double xCurrent = getXOffsetForDoubleIndex(idx, w);
 
-    // Calculate coordinates of current node i, prev node i-1, and next node i+1
-    final double xCurrent = getXOffsetForIndex(index, w);
-    final double xPrev = index > 0 ? getXOffsetForIndex(index - 1, w) : xCurrent;
-    final double xNext = !isLast ? getXOffsetForIndex(index + 1, w) : xCurrent;
+    // Exact midpoints along the curve
+    final double xStart = index > 0 ? getXOffsetForDoubleIndex(idx - 0.5, w) : xCurrent;
+    final double xEnd = !isLast ? getXOffsetForDoubleIndex(idx + 0.5, w) : xCurrent;
 
-    // Calculate boundary start and end x-coordinates for perfect continuity
-    final double xStart = (xCurrent + xPrev) / 2;
-    final double xEnd = (xCurrent + xNext) / 2;
+    // Tangents at key points (vertical anchor 0.0 at extremities)
+    final double dxStart = index > 0 ? getDXOffsetForDoubleIndex(idx - 0.5, w) / 6.0 : 0.0;
+    final double dxCurrent = getDXOffsetForDoubleIndex(idx, w) / 6.0;
+    final double dxEnd = !isLast ? getDXOffsetForDoubleIndex(idx + 0.5, w) / 6.0 : 0.0;
+
+    // Extend the path by 15 pixels past the boundary to cover diagonal butt cap gaps (over-drawing)
+    final double xStartExtended = xStart - dxStart * 0.75;
+    final double xEndExtended = xEnd + dxEnd * 0.75;
 
     final Paint borderPaint = Paint()
-      ..color = const Color(0xFFF59E0B).withValues(alpha: 0.8) // Road border
+      ..color =
+          const Color(0xFFE28A2B) // Premium dark orange/brown road border
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 34.0
-      ..strokeCap = StrokeCap.round;
+      ..strokeWidth = 38.0;
 
     final Paint roadPaint = Paint()
-      ..color = const Color(0xFFFEF08A) // Sandy yellow inner path
+      ..color =
+          const Color(0xFFFEF08A) // Sandy yellow road surface
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 30.0
-      ..strokeCap = StrokeCap.round;
+      ..strokeWidth = 30.0;
 
     final Path path = Path();
-    path.moveTo(xStart, 120.0);
+    path.moveTo(xStartExtended, 135.0);
 
-    // Smooth Bezier from bottom-to-center
-    path.cubicTo(
-      xStart, 90.0,
-      xCurrent, 90.0,
-      xCurrent, 60.0,
-    );
+    // Smooth Bezier from bottom boundary to center using Hermite spline tangents
+    path.cubicTo(xStart + dxStart, 100.0, xCurrent - dxCurrent, 80.0, xCurrent, 60.0);
 
-    // Smooth Bezier from center-to-top
-    path.cubicTo(
-      xCurrent, 30.0,
-      xEnd, 30.0,
-      xEnd, 0.0,
-    );
+    // Smooth Bezier from center to top boundary using Hermite spline tangents
+    path.cubicTo(xCurrent + dxCurrent, 40.0, xEnd - dxEnd, 20.0, xEndExtended, -15.0);
 
     // Render road border and inside road surface
     canvas.drawPath(path, borderPaint);
@@ -226,7 +205,7 @@ class RoadPainter extends CustomPainter {
 
     // Render dashed center-line
     final Paint centerLinePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.7)
+      ..color = Colors.white.withValues(alpha: 0.8)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.5;
 
@@ -277,11 +256,7 @@ class LevelCell extends StatelessWidget {
                 end: Alignment.bottomCenter,
               ),
               boxShadow: [
-                BoxShadow(
-                  color: colors.shadow,
-                  blurRadius: 0,
-                  offset: const Offset(0, 3),
-                ),
+                BoxShadow(color: colors.shadow, blurRadius: 0, offset: const Offset(0, 3)),
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.15),
                   blurRadius: 3,
@@ -300,11 +275,7 @@ class LevelCell extends StatelessWidget {
                         fontSize: 14,
                         fontWeight: FontWeight.w900,
                         shadows: [
-                          Shadow(
-                            color: Color(0x66000000),
-                            blurRadius: 4,
-                            offset: Offset(0, 1.5),
-                          ),
+                          Shadow(color: Color(0x66000000), blurRadius: 4, offset: Offset(0, 1.5)),
                         ],
                       ),
                     ),
