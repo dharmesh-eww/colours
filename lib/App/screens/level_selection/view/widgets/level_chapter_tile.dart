@@ -130,8 +130,8 @@ class MapRoadTile extends StatelessWidget {
     final bool curveIsRight = math.sin(idx * _frequency) > 0;
     final double leftOffset = curveIsRight ? 45.0 : w - 95.0;
 
-    String assetPath = 'assets/images/tree_leafy.png';
-    double size = 48.0;
+    String assetPath = 'assets/images/balloon.png';
+    double size = 46.0;
 
     if (idx % 10 == 9) {
       assetPath = 'assets/images/chest.png';
@@ -140,8 +140,8 @@ class MapRoadTile extends StatelessWidget {
       assetPath = 'assets/images/block_3d.png';
       size = 38.0;
     } else if (idx % 2 == 0) {
-      assetPath = 'assets/images/tree_pine.png';
-      size = 48.0;
+      assetPath = 'assets/images/gem.png';
+      size = 42.0;
     }
 
     return Positioned(
