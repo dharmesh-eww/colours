@@ -1,81 +1,253 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:colours/App/core/constants/color_constants.dart';
 import 'package:colours/App/routes/app_routes.dart';
 import '../../repository/level_selection_repository.dart';
 
-// List of relative coordinates (x, y) calibrated for full screen height alignment with the background image
-// Exactly 10 slots distributed along the winding S-curve road
-final List<Offset> mapNodeCoordinates = [
-  const Offset(0.18, 0.19), // Level 1 (near cave/flag)
-  const Offset(0.38, 0.23), // Level 2
-  const Offset(0.58, 0.26), // Level 3
-  const Offset(0.72, 0.31), // Level 4
-  const Offset(0.64, 0.38), // Level 5
-  const Offset(0.44, 0.42), // Level 6
-  const Offset(0.30, 0.48), // Level 7
-  const Offset(0.42, 0.54), // Level 8
-  const Offset(0.62, 0.58), // Level 9
-  const Offset(0.66, 0.67), // Level 10
-];
-
-class LevelGrid extends StatelessWidget {
-  final List<LevelData> levels;
-
-  const LevelGrid({
-    super.key,
-    required this.levels,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return _MapPage(
-      levels: levels,
-    );
-  }
+// Helper to calculate the horizontal coordinates for a level cell based on index
+double getXOffsetForIndex(int index, double screenWidth) {
+  final double center = screenWidth * 0.5;
+  // Amplitude limits the curve so nodes stay inside a safe horizontal range
+  final double amplitude = screenWidth * 0.24;
+  // Serpentine wave frequency
+  final double frequency = 0.5;
+  return center + amplitude * math.sin(index * frequency);
 }
 
-class _MapPage extends StatelessWidget {
-  final List<LevelData> levels;
+// Biome decoration calculator based on level progress, using solid colors and gradients at boundaries
+BoxDecoration getBiomeDecoration(int index) {
+  const Color meadow = Color(0xFFDCFCE7);
+  const Color desert = Color(0xFFFEF3C7);
+  const Color forest = Color(0xFFF3E8FF);
+  const Color ice = Color(0xFFECFDF5);
+  const Color cave = Color(0xFFEFF6FF);
 
-  const _MapPage({
-    required this.levels,
+  if (index == 99) {
+    return const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter,
+        colors: [meadow, desert],
+      ),
+    );
+  } else if (index == 199) {
+    return const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter,
+        colors: [desert, forest],
+      ),
+    );
+  } else if (index == 299) {
+    return const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter,
+        colors: [forest, ice],
+      ),
+    );
+  } else if (index == 399) {
+    return const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter,
+        colors: [ice, cave],
+      ),
+    );
+  }
+
+  // Return solid color per biome block to eliminate horizontal lines
+  Color color = meadow;
+  if (index < 100) {
+    color = meadow;
+  } else if (index < 200) {
+    color = desert;
+  } else if (index < 300) {
+    color = forest;
+  } else if (index < 400) {
+    color = ice;
+  } else {
+    color = cave;
+  }
+  return BoxDecoration(color: color);
+}
+
+class MapRoadTile extends StatelessWidget {
+  final int index;
+  final LevelData level;
+  final bool isLast;
+
+  const MapRoadTile({
+    super.key,
+    required this.index,
+    required this.level,
+    required this.isLast,
   });
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final double width = constraints.maxWidth;
-        final double height = constraints.maxHeight;
+        final double w = constraints.maxWidth;
+        final double x = getXOffsetForIndex(index, w);
 
-        return Stack(
-          clipBehavior: Clip.none,
-          children: List.generate(levels.length, (i) {
-            final level = levels[i];
-            final offset = mapNodeCoordinates[i];
-
-            return Positioned(
-              left: offset.dx * width - 21, // Node width is 42, half is 21
-              top: offset.dy * height - 21, // Node height is 42
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  LevelCell(level: level),
-                  // Green Flag on the first level of the current page/range
-                  if (i == 0)
-                    Positioned(
-                      top: -24,
-                      left: 15,
-                      child: _LevelFlag(),
-                    ),
-                ],
+        return Container(
+          height: 120.0,
+          width: double.infinity,
+          decoration: getBiomeDecoration(index),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // 1. Serpentine Winding Road Painter (with explicit screen width passed)
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: RoadPainter(index: index, isLast: isLast, screenWidth: w),
+                ),
               ),
-            );
-          }),
+
+              // 2. Dynamic Side Decorations
+              _buildDecorations(context, index, w),
+
+              // 3. Level Cell Node
+              Positioned(
+                left: x - 21, // LevelCell size is 42, half is 21
+                top: 60.0 - 21, // Center vertically
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    LevelCell(level: level),
+                    // Green flag banner on the player's active current level cell
+                    if (level.state == LevelState.current)
+                      Positioned(
+                        top: -24,
+                        left: 15,
+                        child: Image.asset(
+                          'assets/images/flag.png',
+                          width: 38,
+                          height: 38,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
   }
+
+  Widget _buildDecorations(BuildContext context, int idx, double w) {
+    final bool curveIsRight = math.sin(idx * 0.5) > 0;
+    final double leftOffset = curveIsRight ? 45.0 : w - 95.0;
+
+    String assetPath = 'assets/images/tree_leafy.png';
+    double size = 48.0;
+
+    if (idx % 10 == 9) {
+      assetPath = 'assets/images/chest.png';
+      size = 40.0;
+    } else if (idx % 15 == 7) {
+      assetPath = 'assets/images/block_3d.png';
+      size = 38.0;
+    } else if (idx % 2 == 0) {
+      assetPath = 'assets/images/tree_pine.png';
+      size = 48.0;
+    }
+
+    return Positioned(
+      left: leftOffset,
+      top: 36.0, // Vertically centered inside the 120px tall tile
+      child: Image.asset(
+        assetPath,
+        width: size,
+        height: size,
+      ),
+    );
+  }
+}
+
+class RoadPainter extends CustomPainter {
+  final int index;
+  final bool isLast;
+  final double screenWidth;
+
+  RoadPainter({
+    required this.index,
+    required this.isLast,
+    required this.screenWidth,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double w = screenWidth;
+
+    // Calculate coordinates of current node i, prev node i-1, and next node i+1
+    final double xCurrent = getXOffsetForIndex(index, w);
+    final double xPrev = index > 0 ? getXOffsetForIndex(index - 1, w) : xCurrent;
+    final double xNext = !isLast ? getXOffsetForIndex(index + 1, w) : xCurrent;
+
+    // Calculate boundary start and end x-coordinates for perfect continuity
+    final double xStart = (xCurrent + xPrev) / 2;
+    final double xEnd = (xCurrent + xNext) / 2;
+
+    final Paint borderPaint = Paint()
+      ..color = const Color(0xFFF59E0B).withValues(alpha: 0.8) // Road border
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 34.0
+      ..strokeCap = StrokeCap.round;
+
+    final Paint roadPaint = Paint()
+      ..color = const Color(0xFFFEF08A) // Sandy yellow inner path
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 30.0
+      ..strokeCap = StrokeCap.round;
+
+    final Path path = Path();
+    path.moveTo(xStart, 120.0);
+
+    // Smooth Bezier from bottom-to-center
+    path.cubicTo(
+      xStart, 90.0,
+      xCurrent, 90.0,
+      xCurrent, 60.0,
+    );
+
+    // Smooth Bezier from center-to-top
+    path.cubicTo(
+      xCurrent, 30.0,
+      xEnd, 30.0,
+      xEnd, 0.0,
+    );
+
+    // Render road border and inside road surface
+    canvas.drawPath(path, borderPaint);
+    canvas.drawPath(path, roadPaint);
+
+    // Render dashed center-line
+    final Paint centerLinePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.7)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+
+    final pathMetrics = path.computeMetrics();
+    for (final metric in pathMetrics) {
+      double distance = 0.0;
+      const double dashLength = 6.0;
+      const double spaceLength = 6.0;
+      while (distance < metric.length) {
+        final Path extract = metric.extractPath(distance, distance + dashLength);
+        canvas.drawPath(extract, centerLinePaint);
+        distance += dashLength + spaceLength;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(RoadPainter oldDelegate) =>
+      oldDelegate.index != index ||
+      oldDelegate.isLast != isLast ||
+      oldDelegate.screenWidth != screenWidth;
 }
 
 // ── Level Cell Node ───────────────────────────────────────────────────────────
@@ -198,18 +370,6 @@ class _StarsRow extends StatelessWidget {
           size: 12,
         );
       }),
-    );
-  }
-}
-
-// ── Flag Banner ───────────────────────────────────────────────────────────────
-class _LevelFlag extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Image.asset(
-      'assets/images/flag.png',
-      width: 38,
-      height: 38,
     );
   }
 }

@@ -1,10 +1,8 @@
-import 'dart:math' as math;
 import 'package:statekit/statekit.dart';
 import 'package:flutter/material.dart';
 import 'package:colours/App/core/constants/color_constants.dart';
 import '../binding/level_selection_binding.dart';
 import '../controller/level_selection_controller.dart';
-import '../repository/level_selection_repository.dart';
 import 'widgets/level_chapter_tile.dart';
 
 class LevelSelection extends StatekitView<LevelSelectionController>
@@ -12,42 +10,42 @@ class LevelSelection extends StatekitView<LevelSelectionController>
   LevelSelection({super.key, super.tag});
 
   @override
+  void initState() {
+    super.initState();
+    controller.scrollToActiveLevel();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/images/level-selection-background.png'),
-          fit: BoxFit.cover,
-        ),
-      ),
+      color: const Color(0xFFDCFCE7), // Meadow base background color
       child: StateBuilder<LevelSelectionController>(
         controller: controller,
         builder: (context, ctrl, child) {
-          // Find the active level (first level with state == LevelState.current)
-          final activeLevelData = ctrl.levels.firstWhere(
-            (l) => l.state == LevelState.current,
-            orElse: () => ctrl.levels.first,
-          );
-          final int activeLevel = activeLevelData.number;
-
-          // Determine the range of 10 levels to show
-          final int startLevelIndex = ((activeLevel - 1) / 10).floor() * 10;
-          final int endLevelIndex = math.min(startLevelIndex + 10, ctrl.levels.length);
-          final displayLevels = ctrl.levels.sublist(startLevelIndex, endLevelIndex);
-
           return Stack(
             children: [
-              // 1. Interactive Winding Map Nodes (full screen)
+              // 1. Smooth Scrollable Roadmap
               Positioned.fill(
-                child: LevelGrid(
-                  levels: displayLevels,
+                child: ListView.builder(
+                  controller: ctrl.scrollController,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: ctrl.levels.length,
+                  reverse: true, // Level 1 is at the bottom, winds upward
+                  itemBuilder: (context, index) {
+                    final level = ctrl.levels[index];
+                    return MapRoadTile(
+                      index: index,
+                      level: level,
+                      isLast: index == ctrl.levels.length - 1,
+                    );
+                  },
                 ),
               ),
 
-              // 2. Safe Area UI overlays (Title)
+              // 2. Safe Area HUD Title Overlay (Ignored pointer so clicks go to nodes underneath)
               SafeArea(
                 child: IgnorePointer(
-                  ignoring: true, // Let taps pass through to map nodes below
+                  ignoring: true,
                   child: Column(
                     children: [
                       const SizedBox(height: 20),
@@ -68,6 +66,13 @@ class LevelSelection extends StatekitView<LevelSelectionController>
                               fontSize: 26,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 1.5,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.white,
+                                  blurRadius: 10,
+                                  offset: Offset(0, 1),
+                                ),
+                              ],
                             ),
                           ),
                           const SizedBox(width: 14),
@@ -78,12 +83,20 @@ class LevelSelection extends StatekitView<LevelSelectionController>
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        'Levels ${startLevelIndex + 1} - $endLevelIndex',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
+                        ),
+                        child: const Text(
+                          'Scroll Up for New Worlds',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ],
